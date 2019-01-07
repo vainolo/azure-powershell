@@ -50,7 +50,7 @@ StorageAccountName           : mystorage
 StorageKeyType               : Primary
 RetentionInDays              : 0
 StorageAccountSubscriptionId : 7fe3301d-31d3-4668-af5e-211a890ba6e3
-PredicateExpression	         : statement <> 'select 1'
+PredicateExpression          : statement <> 'select 1'
 ```
 
 ### Example 2: Get the blob storage auditing settings of an Azure SQL server
@@ -65,7 +65,7 @@ StorageAccountName           : mystorage
 StorageKeyType               : Primary
 RetentionInDays              : 0
 StorageAccountSubscriptionId : 7fe3301d-31d3-4668-af5e-211a890ba6e3
-PredicateExpression	         : statement <> 'select 1'
+PredicateExpression          : statement <> 'select 1'
 ```
 
 ### Example 3: Get the event hub auditing settings of an Azure SQL server
@@ -76,7 +76,7 @@ AuditActionGroup            : {SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP, FAILED_
 ResourceGroupName           : resourcegroup01
 ServerName                  : server01
 AuditState                  : Enabled
-PredicateExpression	        : statement <> 'select 1'
+PredicateExpression         : statement <> 'select 1'
 EventHubName                : eventHubName
 EventHubAuthorizationRuleId : eventHubAuthorizationRuleId
 ```
@@ -89,7 +89,7 @@ AuditActionGroup    : {SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP, FAILED_DATABASE
 ResourceGroupName   : resourcegroup01
 ServerName          : server01
 AuditState          : Enabled
-PredicateExpression	: statement <> 'select 1'
+PredicateExpression : statement <> 'select 1'
 WorkspaceId         : workSpaceId
 ```
 
