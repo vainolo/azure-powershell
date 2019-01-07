@@ -12,19 +12,22 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
+using Microsoft.Azure.Commands.Common.Authentication.Abstractions;
 using Microsoft.Azure.Commands.Sql.Auditing.Model;
 using Microsoft.Azure.Commands.Sql.Common;
-using Microsoft.Azure.Commands.Sql.Services;
 using System;
-using System.Linq;
 using System.Management.Automation;
 
-namespace Microsoft.Azure.Commands.Sql.Auditing.Cmdlet
+namespace Microsoft.Azure.Commands.Sql.Auditing.Cmdlet.AuditingSettings
 {
     /// <summary>
     /// Sets the auditing settings properties for a specific database.
     /// </summary>
-    [Cmdlet("Set", ResourceManager.Common.AzureRMConstants.AzureRMPrefix + "SqlDatabaseAuditing", SupportsShouldProcess = true, DefaultParameterSetName = DefaultParameterSetName), OutputType(typeof(DatabaseBlobAuditingSettingsModel))]
+    [Cmdlet(
+        VerbsCommon.Set,
+        ResourceManager.Common.AzureRMConstants.AzureRMPrefix + "SqlDatabaseAuditing",
+        SupportsShouldProcess = true),
+        OutputType(typeof(DatabaseAuditingSettingsModel))]
     public class SetAzureSqlDatabaseAuditing : SqlDatabaseAuditingSettingsCmdletBase
     {
         /// <summary>
@@ -38,57 +41,170 @@ namespace Microsoft.Azure.Commands.Sql.Auditing.Cmdlet
         /// <summary>
         ///  Defines whether the cmdlets will output the model object at the end of its execution
         /// </summary>
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = false, HelpMessage = AuditingHelpMessages.PassThruHelpMessage)]
         public SwitchParameter PassThru { get; set; }
 
         /// <summary>
         ///  Defines the set of audit action groups that would be used by the auditing settings
         /// </summary>
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = AuditingHelpMessages.AuditActionGroupsHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.BlobStorageParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditActionGroupsHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EnableStorageAccountSubscriptionIdSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditActionGroupsHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EventHubParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditActionGroupsHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.LogAnalyticsParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditActionGroupsHelpMessage)]
         public AuditActionGroups[] AuditActionGroup { get; set; }
 
         /// <summary>
         ///  Defines the set of audit actions that would be used by the auditing settings
         /// </summary>
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = AuditingHelpMessages.AuditActionHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.BlobStorageParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditActionHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EnableStorageAccountSubscriptionIdSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditActionHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EventHubParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditActionHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.LogAnalyticsParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditActionHelpMessage)]
         public string[] AuditAction { get; set; }
 
-        /// <summary>
-        /// Gets or sets the name of the storage account to use.
-        /// </summary>
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = AuditingHelpMessages.AuditStorageAccountNameHelpMessage)]
-        [Parameter(ParameterSetName = StorageAccountSubscriptionIdSetName, Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = AuditingHelpMessages.AuditStorageAccountNameHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.BlobStorageParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.PredicateExpressionHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EnableStorageAccountSubscriptionIdSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.PredicateExpressionHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EventHubParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.PredicateExpressionHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.LogAnalyticsParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.PredicateExpressionHelpMessage)]
+        [ValidateNotNull]
+        public string PredicateExpression { get; internal set; }
+
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.BlobStorageParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.BlobStorageHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EnableStorageAccountSubscriptionIdSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.BlobStorageHelpMessage)]
+        public override SwitchParameter BlobStorage { get; set; }
+
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.BlobStorageParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditStorageAccountNameHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EnableStorageAccountSubscriptionIdSetName,
+            Mandatory = true,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditStorageAccountNameHelpMessage)]
         [ValidateNotNullOrEmpty]
         public string StorageAccountName { get; set; }
 
-        /// <summary>
-        /// Gets or sets storage account subscription id.
-        /// </summary>
-        [Parameter(ParameterSetName = StorageAccountSubscriptionIdSetName, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = AuditingHelpMessages.AuditStorageAccountSubscriptionIdHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EnableStorageAccountSubscriptionIdSetName,
+            Mandatory = true,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.AuditStorageAccountSubscriptionIdHelpMessage)]
         [ValidateNotNullOrEmpty]
         public Guid StorageAccountSubscriptionId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the type of the storage key.
-        /// </summary>
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = AuditingHelpMessages.StorageKeyTypeHelpMessage)]
-        [ValidateSet(SecurityConstants.Primary, SecurityConstants.Secondary, IgnoreCase = false)]
-        [ValidateNotNullOrEmpty]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.BlobStorageParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.StorageKeyTypeHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EnableStorageAccountSubscriptionIdSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.StorageKeyTypeHelpMessage)]
+        [ValidateSet(
+            SecurityConstants.Primary,
+            SecurityConstants.Secondary,
+            IgnoreCase = false)]
         public string StorageKeyType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the number of retention days for the audit logs.
-        /// </summary>
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = AuditingHelpMessages.RetentionInDaysHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.BlobStorageParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.RetentionInDaysHelpMessage)]
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EnableStorageAccountSubscriptionIdSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.RetentionInDaysHelpMessage)]
         [ValidateNotNullOrEmpty]
         public uint? RetentionInDays { get; internal set; }
 
-        /// <summary>
-        /// Gets or sets the predicate expression.
-        /// </summary>
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = AuditingHelpMessages.PredicateExpressionHelpMessage)]
-        [ValidateNotNull]
-        public string PredicateExpression { get; internal set; }
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EventHubParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.EventHubNameHelpMessage)]
+        [ValidateNotNullOrEmpty]
+        public string EventHubName { get; set; }
+
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EventHubParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.EventHubAuthorizationRuleIdHelpMessage)]
+        [ValidateNotNullOrEmpty]
+        public string EventHubAuthorizationRuleId { get; set; }
+
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.LogAnalyticsParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.WorkspaceIdHelpMessage)]
+        [ValidateNotNullOrEmpty]
+        public string WorkspaceId { get; set; }
+
+        [Parameter(Mandatory = false, HelpMessage = AuditingHelpMessages.AsJobHelpMessage)]
+        public SwitchParameter AsJob { get; set; }
 
         /// <summary>
         /// Returns true if the model object that was constructed by this cmdlet should be written out
@@ -100,28 +216,11 @@ namespace Microsoft.Azure.Commands.Sql.Auditing.Cmdlet
         /// Updates the given model element with the cmdlet specific operation 
         /// </summary>
         /// <param name="model">A model object</param>
-        protected override DatabaseBlobAuditingSettingsModel ApplyUserInputToModel(DatabaseBlobAuditingSettingsModel model)
+        protected override DatabaseAuditingSettingsModel ApplyUserInputToModel(DatabaseAuditingSettingsModel model)
         {
             base.ApplyUserInputToModel(model);
 
-            model.AuditState = State == SecurityConstants.Enabled ? AuditStateType.Enabled : AuditStateType.Disabled;
-            if (RetentionInDays != null)
-            {
-                model.RetentionInDays = RetentionInDays;
-            }
-
-            if (StorageAccountName != null)
-            {
-                model.StorageAccountName = StorageAccountName;
-            }
-
-            if (MyInvocation.BoundParameters.ContainsKey(SecurityConstants.StorageKeyType))
-            {
-                // the user enter a key type - we use it (and override the previously defined key type)
-                model.StorageKeyType = (StorageKeyType == SecurityConstants.Primary)
-                    ? StorageKeyKind.Primary
-                    : StorageKeyKind.Secondary;
-            }
+            model.AuditState = State == SecurityConstants.Enabled ? AuditState.Enabled : AuditState.Disabled;
 
             if (AuditActionGroup != null)
             {
@@ -133,25 +232,56 @@ namespace Microsoft.Azure.Commands.Sql.Auditing.Cmdlet
                 model.AuditAction = AuditAction;
             }
 
-            if (!StorageAccountSubscriptionId.Equals(Guid.Empty))
-            {
-                model.StorageAccountSubscriptionId = StorageAccountSubscriptionId;
-            }
-            else if (StorageAccountName != null)
-            {
-                model.StorageAccountSubscriptionId = Guid.Parse(DefaultProfile.DefaultContext.Subscription.Id);
-            }
-
             if (PredicateExpression != null)
             {
                 model.PredicateExpression = PredicateExpression;
             }
 
+            if (ParameterSetName == DefinitionsCommon.BlobStorageParameterSetName ||
+                ParameterSetName == DefinitionsCommon.EnableStorageAccountSubscriptionIdSetName)
+            {
+                DatabaseStorageAuditingSettingsModel storageModel = model as DatabaseStorageAuditingSettingsModel;
+                if (RetentionInDays != null)
+                {
+                    storageModel.RetentionInDays = RetentionInDays;
+                }
+
+                if (StorageAccountName != null)
+                {
+                    storageModel.StorageAccountName = StorageAccountName;
+                }
+
+                if (MyInvocation.BoundParameters.ContainsKey(SecurityConstants.StorageKeyType))
+                {
+                    // the user enter a key type - we use it (and override the previously defined key type)
+                    storageModel.StorageKeyType = (StorageKeyType == SecurityConstants.Primary)
+                        ? StorageKeyKind.Primary
+                        : StorageKeyKind.Secondary;
+                }
+
+                if (!StorageAccountSubscriptionId.Equals(Guid.Empty))
+                {
+                    storageModel.StorageAccountSubscriptionId = StorageAccountSubscriptionId;
+                }
+                else if (StorageAccountName != null)
+                {
+                    storageModel.StorageAccountSubscriptionId = Guid.Parse(DefaultProfile.DefaultContext.Subscription.Id);
+                }
+            }
+
             return model;
         }
 
-        private const string StorageAccountSubscriptionIdSetName = "StorageAccountSubscriptionIdSet";
+        /// <summary>
+        /// This method is responsible to call the right API in the communication layer that will eventually send the information in the 
+        /// object to the REST endpoint
+        /// </summary>
+        /// <param name="model">The model object with the data to be sent to the REST endpoints</param>
+        protected override DatabaseAuditingSettingsModel PersistChanges(DatabaseAuditingSettingsModel model)
+        {
+            ModelAdapter.SetDatabaseStorageAuditingPolicy(model, DefaultContext.Environment.GetEndpoint(AzureEnvironment.Endpoint.StorageEndpointSuffix));
 
-        private const string DefaultParameterSetName = "DefaultParameterSet";
+            return null;
+        }
     }
 }

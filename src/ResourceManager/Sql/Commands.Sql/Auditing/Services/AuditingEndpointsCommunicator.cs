@@ -14,6 +14,7 @@
 
 using Microsoft.Azure.Commands.Common.Authentication;
 using Microsoft.Azure.Commands.Common.Authentication.Abstractions;
+using Microsoft.Azure.Management.Monitor;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Rest.Azure;
@@ -32,9 +33,9 @@ namespace Microsoft.Azure.Commands.Sql.Auditing.Services
         private static SqlManagementClient SqlClient { get; set; }
 
         /// <summary>
-        /// The Legacy Sql client to be used by this end points communicator
+        /// The Monitor Client to be used by this end points communicator.
         /// </summary>
-        private static Management.Sql.LegacySdk.SqlManagementClient LegacySqlClient { get; set; }
+        private static IMonitorManagementClient MonitorClient { get; set; }
 
         /// <summary>
         /// Gets or set the Azure subscription
@@ -52,45 +53,9 @@ namespace Microsoft.Azure.Commands.Sql.Auditing.Services
             if (context.Subscription != Subscription)
             {
                 Subscription = context.Subscription;
-                LegacySqlClient = null;
                 SqlClient = null;
+                MonitorClient = null;
             }
-        }
-
-        /// <summary>
-        /// Gets the database auditing policy for the given database in the given database server in the given resource group
-        /// </summary>
-        public void GetDatabaseAuditingPolicy(string resourceGroupName, string serverName, string databaseName, out Management.Sql.LegacySdk.Models.DatabaseAuditingPolicy policy)
-        {
-            policy = Management.Sql.LegacySdk.AuditingPolicyOperationsExtensions.GetDatabasePolicy(
-                GetCurrentLegacySqlClient().AuditingPolicy, resourceGroupName, serverName, databaseName).AuditingPolicy;
-        }
-
-        /// <summary>
-        /// Gets the database server auditing policy for the given database server in the given resource group
-        /// </summary>
-        public void GetServerAuditingPolicy(string resourceGroupName, string serverName, out Management.Sql.LegacySdk.Models.ServerAuditingPolicy policy)
-        {
-            policy = Management.Sql.LegacySdk.AuditingPolicyOperationsExtensions.GetServerPolicy(
-                GetCurrentLegacySqlClient().AuditingPolicy, resourceGroupName, serverName).AuditingPolicy;
-        }
-
-        /// <summary>
-        /// Calls the set audit APIs for the database auditing policy for the given database in the given database server in the given resource group
-        /// </summary>
-        public void SetDatabaseAuditingPolicy(string resourceGroupName, string serverName, string databaseName, Management.Sql.LegacySdk.Models.DatabaseAuditingPolicyCreateOrUpdateParameters parameters)
-        {
-            Management.Sql.LegacySdk.AuditingPolicyOperationsExtensions.CreateOrUpdateDatabasePolicy(
-                GetCurrentLegacySqlClient().AuditingPolicy, resourceGroupName, serverName, databaseName, parameters);
-        }
-
-        /// <summary>
-        /// Sets the database server auditing policy of the given database server in the given resource group
-        /// </summary>
-        public void SetServerAuditingPolicy(string resourceGroupName, string serverName, Management.Sql.LegacySdk.Models.ServerAuditingPolicyCreateOrUpdateParameters parameters)
-        {
-            Management.Sql.LegacySdk.AuditingPolicyOperationsExtensions.CreateOrUpdateServerPolicy(
-                GetCurrentLegacySqlClient().AuditingPolicy, resourceGroupName, serverName, parameters);
         }
 
         /// <summary>
@@ -156,21 +121,6 @@ namespace Microsoft.Azure.Commands.Sql.Auditing.Services
         /// id tracing headers for the current cmdlet invocation.
         /// </summary>
         /// <returns>The SQL Management client for the currently selected subscription.</returns>
-        private Management.Sql.LegacySdk.SqlManagementClient GetCurrentLegacySqlClient()
-        {
-            // Get the Legacy SQL management client for the current subscription
-            if (LegacySqlClient == null)
-            {
-                LegacySqlClient = AzureSession.Instance.ClientFactory.CreateClient<Management.Sql.LegacySdk.SqlManagementClient>(Context, AzureEnvironment.Endpoint.ResourceManager);
-            }
-            return LegacySqlClient;
-        }
-
-        /// <summary>
-        /// Retrieve the SQL Management client for the currently selected subscription, adding the session and request
-        /// id tracing headers for the current cmdlet invocation.
-        /// </summary>
-        /// <returns>The SQL Management client for the currently selected subscription.</returns>
         private SqlManagementClient GetCurrentSqlClient()
         {
             // Get the SQL management client for the current subscription
@@ -180,6 +130,16 @@ namespace Microsoft.Azure.Commands.Sql.Auditing.Services
             }
 
             return SqlClient;
+        }
+
+        private IMonitorManagementClient GetMonitorManagementClient()
+        {
+            if (MonitorClient == null)
+            {
+                MonitorClient = AzureSession.Instance.ClientFactory.CreateArmClient<MonitorManagementClient>(Context, AzureEnvironment.Endpoint.ResourceManager);
+            }
+
+            return MonitorClient;
         }
     }
 }

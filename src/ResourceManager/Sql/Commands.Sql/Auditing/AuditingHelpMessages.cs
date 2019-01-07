@@ -7,8 +7,7 @@
         public const string AuditStorageAccountNameHelpMessage =
 @"The name of the storage account. Wildcard characters are not permitted.  
 This parameter is not required.  
-If you do not specify this parameter, the cmdlet uses the storage account that was defined previously as part of the auditing policy.  
-If this is the first time an auditing policy is defined and you do not specify this parameter, the cmdlet fails.";
+If you do not specify this parameter, the cmdlet uses the storage account that was defined previously as part of the auditing policy.";
 
         public const string AuditStorageAccountSubscriptionIdHelpMessage = "Specifies storage account subscription id";
 
@@ -17,6 +16,22 @@ If this is the first time an auditing policy is defined and you do not specify t
         public const string RetentionInDaysHelpMessage = "The number of retention days for the audit logs.";
 
         public const string PredicateExpressionHelpMessage = "The T-SQL predicate (WHERE clause) used to filter audit logs.";
+
+        public const string EventHubNameHelpMessage = "The name of the event hub. If none is specified when providing EventHubAuthorizationRuleId, the default event hub will be selected.";
+
+        public const string EventHubAuthorizationRuleIdHelpMessage = "The resource Id for the event hub authorization rule";
+
+        public const string WorkspaceIdHelpMessage = "The workspace ID (resource ID of a Log Analytics workspace) for a Log Analytics workspace to which you would like to send Audit Logs. Example: /subscriptions/4b9e8510-67ab-4e9a-95a9-e2f1e570ea9c/resourceGroups/insights-integration/providers/Microsoft.OperationalInsights/workspaces/viruela2";
+
+        public const string PassThruHelpMessage = "Specifies whether to output the auditing policy at end of cmdlet execution";
+        
+        public const string BlobStorageHelpMessage = "Specifies that audit logs destination is blob storage";
+
+        public const string EventHubHelpMessage = "Specifies that audit logs destination is event hub";
+
+        public const string LogAnalyticsHelpMessage = "Specifies that audit logs destination is log analytics";
+
+        public const string AsJobHelpMessage = "Run cmdlet in the background";
 
         public const string AuditActionHelpMessage =
 @"The set of audit actions.  

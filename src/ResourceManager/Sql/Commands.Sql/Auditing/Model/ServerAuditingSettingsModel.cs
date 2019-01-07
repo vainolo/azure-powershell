@@ -12,8 +12,15 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
+using System;
+
 namespace Microsoft.Azure.Commands.Sql.Auditing.Model
 {
+    /// <summary>
+    /// The possible states in which an auditing policy may be in
+    /// </summary>
+    public enum AuditState { Enabled, Disabled };
+
     public enum AuditActionGroups
     {
         BATCH_STARTED_GROUP,
@@ -21,7 +28,7 @@ namespace Microsoft.Azure.Commands.Sql.Auditing.Model
         APPLICATION_ROLE_CHANGE_PASSWORD_GROUP,
         BACKUP_RESTORE_GROUP,
         DATABASE_LOGOUT_GROUP,
-        DATABASE_OBJECT_CHANGE_GROUP, 
+        DATABASE_OBJECT_CHANGE_GROUP,
         DATABASE_OBJECT_OWNERSHIP_CHANGE_GROUP,
         DATABASE_OBJECT_PERMISSION_CHANGE_GROUP,
         DATABASE_OPERATION_GROUP,
@@ -31,18 +38,50 @@ namespace Microsoft.Azure.Commands.Sql.Auditing.Model
         DATABASE_ROLE_MEMBER_CHANGE_GROUP,
         FAILED_DATABASE_AUTHENTICATION_GROUP,
         SCHEMA_OBJECT_ACCESS_GROUP,
-        SCHEMA_OBJECT_CHANGE_GROUP, 
+        SCHEMA_OBJECT_CHANGE_GROUP,
         SCHEMA_OBJECT_OWNERSHIP_CHANGE_GROUP,
-        SCHEMA_OBJECT_PERMISSION_CHANGE_GROUP, 
+        SCHEMA_OBJECT_PERMISSION_CHANGE_GROUP,
         SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP,
         USER_CHANGE_PASSWORD_GROUP
     }
 
     /// <summary>
+    /// types of storage keys
+    /// </summary>
+    public enum StorageKeyKind { Primary, Secondary };
+
+    /// <summary>
     /// The base class that defines the core properties of an auditing policy
     /// </summary>
-    public abstract class BaseBlobAuditingPolicyModel : AuditingPolicyModel
+    public abstract class ServerAuditingSettingsModel
     {
+        /// <summary>
+        /// Gets or sets the resource group
+        /// </summary>
+        public string ResourceGroupName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the server name
+        /// </summary>
+        public string ServerName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audit state
+        /// </summary>
+        public AuditState AuditState { get; set; }
+
         public AuditActionGroups[] AuditActionGroup { get; set; }
+
+        /// <summary>
+        /// Gets or sets predicate expression
+        /// </summary>
+        public string PredicateExpression { get; set; }
+
+        internal const string DisabledOrGetAuditParameterSetName = "DisableAuditParameterSet";
+        internal const string EnableBlobStorageParameterSetName = "BlobStorageParameterSet";
+        internal const string EnableEventHubParameterSetName = "EventHubParameterSet";
+        internal const string EnableLogAnalyticsParameterSetName = "WorkspaceIdParameterSet";
+        internal const string EnableStorageAccountSubscriptionIdSetName = "StorageAccountSubscriptionIdSet";
+
     }
 }

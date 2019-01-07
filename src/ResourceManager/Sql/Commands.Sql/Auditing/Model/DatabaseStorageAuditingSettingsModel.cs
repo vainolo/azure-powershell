@@ -1,4 +1,4 @@
-// ----------------------------------------------------------------------------------
+﻿// ----------------------------------------------------------------------------------
 //
 // Copyright Microsoft Corporation
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,32 +12,33 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
+using System;
+
 namespace Microsoft.Azure.Commands.Sql.Auditing.Model
 {
     /// <summary>
-    /// The possible audit event types
-    /// </summary> 
-    public enum AuditEventType { PlainSQL_Success, PlainSQL_Failure, ParameterizedSQL_Success, ParameterizedSQL_Failure, StoredProcedure_Success, StoredProcedure_Failure, Login_Success, Login_Failure, TransactionManagement_Success, TransactionManagement_Failure, None };
-
-
-    /// <summary>
     /// The base class that defines the core properties of an auditing policy
     /// </summary>
-    public abstract class BaseTableAuditingPolicyModel : AuditingPolicyModel
+    public class DatabaseStorageAuditingSettingsModel : DatabaseAuditingSettingsModel
     {
         /// <summary>
-        /// Gets or sets the audit event types
+        /// Gets or sets the storage account name
         /// </summary>
-        public AuditEventType[] EventType { get; set; }
+        public string StorageAccountName { get; set; }
 
         /// <summary>
-        /// Gets or sets the audit logs table name 
+        /// Gets or sets the storage key type
         /// </summary>
-        public string TableIdentifier { get; internal set; }
+        public StorageKeyKind StorageKeyType { get; set; }
 
         /// <summary>
-        /// Gets or sets the full name of audit logs table 
+        /// Gets or sets the retention days
         /// </summary>
-        public string FullAuditLogsTableName { get; internal set; }
+        public uint? RetentionInDays { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the id of the storage account subscription.
+        /// </summary>
+        public Guid StorageAccountSubscriptionId { get; set; }
     }
 }

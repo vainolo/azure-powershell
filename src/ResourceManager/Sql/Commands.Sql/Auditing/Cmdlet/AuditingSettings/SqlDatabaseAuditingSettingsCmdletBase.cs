@@ -12,30 +12,65 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
-using System;
-using System.Linq;
-using Microsoft.Azure.Commands.Common.Authentication.Models;
+using Microsoft.Azure.Commands.Common.Authentication.Abstractions;
 using Microsoft.Azure.Commands.Sql.Auditing.Model;
 using Microsoft.Azure.Commands.Sql.Auditing.Services;
 using Microsoft.Azure.Commands.Sql.Common;
-using Microsoft.Azure.Commands.Sql.Properties;
-using Microsoft.Azure.Commands.Common.Authentication.Abstractions;
+using System.Management.Automation;
 
-namespace Microsoft.Azure.Commands.Sql.Auditing.Cmdlet
+namespace Microsoft.Azure.Commands.Sql.Auditing.Cmdlet.AuditingSettings
 {
     /// <summary>
     /// The base class for Azure Sql Database auditing settings Management Cmdlets
     /// </summary>
-    public abstract class SqlDatabaseAuditingSettingsCmdletBase : AzureSqlDatabaseCmdletBase<DatabaseBlobAuditingSettingsModel, SqlAuditAdapter>
+    public abstract class SqlDatabaseAuditingSettingsCmdletBase : AzureSqlDatabaseCmdletBase<DatabaseAuditingSettingsModel, SqlAuditAdapter>
     {
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.BlobStorageParameterSetName,
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.BlobStorageHelpMessage)]
+        public virtual SwitchParameter BlobStorage { get; set; }
+
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.EventHubParameterSetName,
+            Mandatory = true,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.EventHubHelpMessage)]
+        public SwitchParameter EventHub { get; set; }
+
+        [Parameter(
+            ParameterSetName = DefinitionsCommon.LogAnalyticsParameterSetName,
+            Mandatory = true,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = AuditingHelpMessages.LogAnalyticsHelpMessage)]
+        public SwitchParameter LogAnalytics { get; set; }
+
         /// <summary>
         /// Provides the model element that this cmdlet operates on
         /// </summary>
         /// <returns>A model object</returns>
-        protected override DatabaseBlobAuditingSettingsModel GetEntity()
+        protected override DatabaseAuditingSettingsModel GetEntity()
         {
-            DatabaseBlobAuditingSettingsModel model = new DatabaseBlobAuditingSettingsModel();
-            ModelAdapter.GetDatabaseBlobAuditingPolicy(ResourceGroupName, ServerName, DatabaseName, model);
+            DatabaseAuditingSettingsModel model = null;
+            if (ParameterSetName == DefinitionsCommon.BlobStorageParameterSetName ||
+                ParameterSetName == DefinitionsCommon.EnableStorageAccountSubscriptionIdSetName)
+            {
+                model = new DatabaseStorageAuditingSettingsModel();
+                ModelAdapter.GetDatabaseStorageAuditingSettingsModel(ResourceGroupName, ServerName, DatabaseName, model as DatabaseStorageAuditingSettingsModel);
+            }
+            else if (ParameterSetName == DefinitionsCommon.EventHubParameterSetName)
+            {
+                model = new DatabsaeEventHubAuditingSettingsModel();
+            }
+            else if (ParameterSetName == DefinitionsCommon.LogAnalyticsParameterSetName)
+            {
+                model = new DatabaseLogAnalyticsAuditingSettingsModel();
+            }
+
+            model.ResourceGroupName = ResourceGroupName;
+            model.ServerName = ServerName;
+            model.DatabaseName = DatabaseName;
             return model;
         }
 
@@ -47,18 +82,6 @@ namespace Microsoft.Azure.Commands.Sql.Auditing.Cmdlet
         protected override SqlAuditAdapter InitModelAdapter(IAzureSubscription subscription)
         {
             return new SqlAuditAdapter(DefaultProfile.DefaultContext);
-        }
-
-        /// <summary>
-        /// This method is responsible to call the right API in the communication layer that will eventually send the information in the 
-        /// object to the REST endpoint
-        /// </summary>
-        /// <param name="model">The model object with the data to be sent to the REST endpoints</param>
-        protected override DatabaseBlobAuditingSettingsModel PersistChanges(DatabaseBlobAuditingSettingsModel model)
-        {
-            ModelAdapter.SetDatabaseBlobAuditingPolicyV2(model, DefaultContext.Environment.GetEndpoint(AzureEnvironment.Endpoint.StorageEndpointSuffix));
-           
-            return null;
         }
     }
 }

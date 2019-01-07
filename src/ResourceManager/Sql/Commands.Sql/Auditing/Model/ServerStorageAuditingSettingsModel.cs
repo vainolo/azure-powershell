@@ -12,16 +12,33 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
+using System;
+
 namespace Microsoft.Azure.Commands.Sql.Auditing.Model
 {
     /// <summary>
-    /// A class representing A server's auditing policy
+    /// The base class that defines the core properties of an auditing policy
     /// </summary>
-    public class ServerAuditingPolicyModel : BaseTableAuditingPolicyModel
+    public class ServerStorageAuditingSettingsModel : ServerAuditingSettingsModel
     {
         /// <summary>
-        /// Gets or sets the audit type
+        /// Gets or sets the storage account name
         /// </summary>
-        public AuditType AuditType { get; set; }
+        public string StorageAccountName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the storage key type
+        /// </summary>
+        public StorageKeyKind StorageKeyType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the retention days
+        /// </summary>
+        public uint? RetentionInDays { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the id of the storage account subscription.
+        /// </summary>
+        public Guid StorageAccountSubscriptionId { get; set; }
     }
 }
