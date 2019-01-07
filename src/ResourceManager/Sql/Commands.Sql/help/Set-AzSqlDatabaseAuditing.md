@@ -9,7 +9,7 @@ schema: 2.0.0
 # Set-AzSqlDatabaseAuditing
 
 ## SYNOPSIS
-Changes the auditing settings for an Azure SQL database.
+Sets the auditing settings for an Azure SQL database.
 
 ## SYNTAX
 
